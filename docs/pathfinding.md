@@ -138,6 +138,14 @@ Parameters | Use
 
 *return* : the h cost of the box which need to be evaluated.
 
+# <a name="get_path" />et_path()
+
+**Objective** : get the best path.
+
+    def run(self):
+
+*return* : none
+
 # <a name="display_path" />display_path()
 
 **Objective** : display the path on the window.
