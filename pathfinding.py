@@ -474,12 +474,5 @@ class Pathfinding():
                                         self.display_path(play)                                    
                                                             
                                 self.display()
-        
-def main():
-    pathfinding = Pathfinding(1920,1080,100,50)
-    pathfinding.init_map()
-    pathfinding.init_display()
-    pathfinding.run()
 
-if __name__ == "__main__":
-    main()
+pathfinding = Pathfinding(1920, 1080, 100, 50)

@@ -7,11 +7,11 @@ These are the python modules used to write the different classes
     from math import *
     from random import *  
 
-Install `pip` running this command :
+To install `pip` run :
 
     sudo apt install python3-pip
 
-Install pygame running this command :
+To install `pygame` run :
 
     pip3 install pygame
 
