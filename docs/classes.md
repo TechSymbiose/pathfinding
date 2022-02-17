@@ -1,6 +1,6 @@
 # **<a name="classes" />Classes**
 
-- ## [Type](#/type.md)
-- ## [Image](#/image.md)
-- ## [Box](#/box.md)
-- ## [Pathfinding](#/pathfinding.md)
+- ## [Type](./type.md)
+- ## [Image](./image.md)
+- ## [Box](./box.md)
+- ## [Pathfinding](./pathfinding.md)

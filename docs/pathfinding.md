@@ -38,29 +38,31 @@ Parameter | Use
 - [init_display](#init_display)
 - [get_event()](#get_event)
 - [lowest_f_cost_box()](#lowest_f_cost_box)
-- [lowest_f_cost_box_index()](lowest_f_cost_box_index)
+- [lowest_f_cost_box_index()](#lowest_f_cost_box_index)
 - [calculating_g_cost()](#calculating_g_cost)
 - [calculating_h_cost](#calculating_h_cost)
-- [lowest_f_cost_box_path](#lowest_f_cost_box_path)
+- [calculating_f_cost](#calculating_f_cost)
 - [evaluate()](#evaluate)
 - [display()](#display)
+- [lowest_f_cost_box_path](#lowest_f_cost_box_path)
 - [get_path](#get_path)
 - [display_path()](#display_path)
 - [run()](#run)
 
-# set_windows()
+# <a name="set_window" />set_window()   
 
 **Objective** : set the map and the window caracteristics.
 
     def set_window(self, maxWidth, maxHeight, columns, lines):
 
 Parameters | Use
+--- | ---
 `maxWidth` | maximum width of the window
 `maxHeight` | maximum height of the window
 `columns` | number of columns of the map
 `lines` | numer of lines of the map
 
-# set_windows()
+# <a name="init_map" />init_map()
 
 **Objective** : initialize the map.
 
@@ -68,7 +70,7 @@ Parameters | Use
 
 *return* : none
 
-# init_display()
+# <a name="init_display" />init_display()
 
 **Objective** : initialize the display to display the map.
 
@@ -76,58 +78,82 @@ Parameters | Use
 
 *return* : none
 
-# get_event()
+# <a name="get_event" />get_event()
 
 **Objective** : get the keyboard key pressing and do the correspondant actions.
 
     def get_event(self, play):
 
 Parameters | Use
+--- | ---
 `play` | boolean used to pause and unpause the game
 
 *return* : the boolean used to pause and unpause the game.
 
-# lowest_f_cost_box()
+# <a name="lowest_f_cost_box" />lowest_f_cost_box()
 
 **Objective** : get the box with the lowest f cost.
 
     def lowest_f_cost_box(self, boxesToEvaluate):
 
 Parameters | Use
+--- | ---
 `boxesToEvaluate` | the list of boxes to evaluate to determine the box with the lowest f cost
 
 *return* : the box with the lowest f cost.
 
-# lowest_f_cost_box_index()
+# <a name="lowest_f_cost_box_index" />lowest_f_cost_box_index()
 
 **Objective** : get the index of the box with the lowest f cost in the list.
 
     def lowest_f_cost_box_index(self, boxesToEvaluate):
 
 Parameters | Use
+--- | ---
 `boxesToEvaluate` | the list of boxes to evaluate to determine the box with the lowest f cost
 
 *return* : the index of the box with the lowest f cost.
 
-# calculating_g_cost()
+# <a name="calculating_g_cost" />calculating_g_cost()
 
 **Objective** : calculate the g cost of the box which need to be evaluated.
 
     def calculating_g_cost(self, evaluatedbox, motherbox):
 
 Parameters | Use
+--- | ---
 `evaluatedbox` | the box which need to be evaluated
 `motherbox` | the mother box of the box which need to be evaluated
 
 *return* : the g cost of the box which need to be evaluated.
 
-# calculating_h_cost()
+# <a name="calculating_h_cost" />calculating_h_cost()
 
-**Objective** : .
+**Objective** : calculate the h cost of the box which need to be evaluated.
 
     def calculating_h_cost(self, evaluatedbox):
 
 Parameters | Use
-`` | 
+`evaluatedbox` | the box which need to be evaluated 
 
-*return* : .
+*return* : the h cost of the box which need to be evaluated.
+
+# <a name="display_path" />display_path()
+
+**Objective** : display the path on the window.
+
+    def run(self):
+
+Parameter | Use
+--- | ---
+play | boolean used to pause and unpause the game.
+
+*return* : none
+
+# <a name="run" />run()
+
+**Objective** : run the pathfinding algorithm and display the process on screen.
+
+    def run(self):
+
+*return* : none

@@ -96,7 +96,7 @@ class Pathfinding():
         self._width = 0
         self._height = 0
 
-        self.delay = 10 # the delay between 2 iterations of the algorithm
+        self.delay = 15 # the delay between 2 iterations of the algorithm
         self.FPS = 60 # Frames Per Seconds to display
 
         pygame.display.set_caption("Pathfinding program")
@@ -231,17 +231,17 @@ class Pathfinding():
     brief : Determine the index of the box with the lowest F cost
     param : 
     - boxesToEvaluate : the list of boxes which need to be evaluated
-    return lowest_f_cost_boxIndex : the index of the box with the lowest F cost
+    return lowest_f_cost_box_index : the index of the box with the lowest F cost
     """
     def lowest_f_cost_box_index(self, boxesToEvaluate):
         box = self.lowest_f_cost_box(boxesToEvaluate)
-        lowest_f_cost_boxIndex = 0
+        lowest_f_cost_box_index = 0
 
         for index in range(len(boxesToEvaluate)):
             if ((boxesToEvaluate[index].line == box.line) and (boxesToEvaluate[index].column == box.column)):
-                lowest_f_cost_boxIndex = index
+                lowest_f_cost_box_index = index
     
-        return lowest_f_cost_boxIndex
+        return lowest_f_cost_box_index
 
     """ calculating_g_cost function : 
     brief : Calculate the G cost of the box which need to be evaluated thanks to its mother box
@@ -281,6 +281,135 @@ class Pathfinding():
         else:
             hCost = min(fabs(evaluatedbox.line-self.end.line), fabs(evaluatedbox.column - self.end.column))*14 + (fabs(evaluatedbox.column - self.end.column)-min(fabs(evaluatedbox.column - self.end.column),fabs(evaluatedbox.line-self.end.line)))*10 + (fabs(evaluatedbox.line - self.end.line)-min(fabs(evaluatedbox.column - self.end.column),fabs(evaluatedbox.line-self.end.line)))*10
         return hCost
+
+    """ calculating_f_cost function : 
+    brief : Calculate the F cost of the current box
+    param : 
+    - current : the current box which need to be evaluated
+    return the F cost (G cost + H cost)
+    """
+    def calculating_f_cost(self, current):    
+        return current.g + current.h
+
+    """ evaluate function : 
+    brief : evaluate current box costs and add the best neighbour in the list of boxes to evaluate next
+    param :
+    - boxesToEvaluate : the list of boxes which need to be evaluated next
+    - current : the current box to evaluate
+    """
+    def evaluate(self, boxesToEvaluate, current):
+        for line in (-1, 0, 1):
+            for column in (-1, 0, 1):
+
+                if ((not((line == 0) and (column == 0)) and (current.column + column < self.columns) and (current.line + line < self.lines) and (current.column + column >= 0) and (current.line + line >= 0))):
+
+                    self.table[current.line+line][current.column+column].g = self.calculating_g_cost(self.table[current.line+line][current.column+column], current)
+                    self.table[current.line+line][current.column+column].h = self.calculating_h_cost(self.table[current.line+line][current.column+column])
+                    self.table[current.line+line][current.column+column].f = self.calculating_f_cost(self.table[current.line+line][current.column+column])
+
+                    if (self.table[current.line+line][current.column+column].type == Type.EMPTY):
+                        boxesToEvaluate.append(self.table[current.line+line][current.column+column])
+                        self.table[current.line+line][current.column+column].type = Type.NON_EVALUATED
+                    elif (self.table[current.line+line][current.column+column].type == Type.END):
+                        boxesToEvaluate.append(self.table[current.line+line][current.column+column])
+
+    """ display function : 
+    brief : display the map on the window
+    param : none 
+    """
+    def display(self):
+
+        for line in range(self.lines):
+            for column in range(self.columns):
+                if (self.table[line][column].type == Type.EMPTY):
+                    self.screen.blit(self.image.empty, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.WALL):
+                    self.screen.blit(self.image.wall, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.START):
+                    self.screen.blit(self.image.start, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.END):
+                    self.screen.blit(self.image.end, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.EVALUATED):
+                    self.screen.blit(self.image.evaluated, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.NON_EVALUATED):
+                    self.screen.blit(self.image.nonEvaluated, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.CURRENT):
+                    self.screen.blit(self.image.current, self.tableRect[line][column])
+                elif (self.table[line][column].type == Type.PATH):
+                    self.screen.blit(self.image.path, self.tableRect[line][column])
+        
+        pygame.display.update()
+        pygame.time.wait(self.delay)
+
+    """ lowest_f_cost_box_path function : 
+    brief : Determine the box with the lowest F cost for the past
+    param : 
+    - boxesToEvaluate : the boxes which must be evaluate
+    return fCostMinNode : the node/box with the lowest F cost
+    """
+    def lowest_f_cost_box_path(self, boxesToEvaluate):
+        fCostMinNodes = []
+        fCostMinNode = boxesToEvaluate[0]
+        fCostMin = boxesToEvaluate[0].f
+        
+        if (len(boxesToEvaluate) > 1):
+            for index in range(len(boxesToEvaluate)):
+                if (boxesToEvaluate[index].f < fCostMin):
+                    fCostMin = boxesToEvaluate[index].f
+
+            for index in range(len(boxesToEvaluate)):
+                if (boxesToEvaluate[index].f == fCostMin):
+                    fCostMinNodes.append(boxesToEvaluate[index])
+
+            gCostMin = fCostMinNodes[0].g
+            fCostMinNode = fCostMinNodes[0]
+
+            for index in range(len(fCostMinNodes)):
+                if (fCostMinNodes[index].g < gCostMin):
+                    gCostMin = fCostMinNodes[index].g
+                    fCostMinNode = fCostMinNodes[index]
+
+        return fCostMinNode
+
+    """ get_path function : 
+    brief : get the optimized path adding the boxes in the path list
+    """
+    def get_path(self):
+        current = self.table[self.end.line][self.end.column]
+        neighbours = []
+
+        while (not(current.type == Type.START)):
+            for line in(-1,0,1):
+                for column in (-1,0,1):
+                    if ((not(line == 0 and column == 0)) and (current.line + line >= 0) and (current.column + column >= 0) and (current.line + line < self.lines) and (current.column + column < self.columns) and (current.type != Type.START)):
+                        if (self.table[current.line+line][current.column+column].type == Type.EVALUATED):
+                            neighbours.append(self.table[current.line+line][current.column+column])
+                        elif (self.table[current.line+line][current.column+column].type == Type.START):
+                            current = self.table[current.line+line][current.column+column]
+                            neighbours = []
+
+            if (len(neighbours) > 0):
+                current = self.lowest_f_cost_box_path(neighbours)
+                self.path.append(current)
+            neighbours = []
+
+    """ display_path function : 
+    brief : display the path on the window
+    param : 
+    - play : boolean used to pause the game
+    """
+    def display_path(self, play):
+        update = False
+        
+        for index in range(len(self.path)):
+            update = False
+            while(not(update)):
+                play = self.get_event(play)
+
+                if (play):
+                    self.path[len(self.path)-index-1].type = Type.PATH
+                    self.display()
+                    update = True
 
     """ run function : 
     brief : run the algorithm program and display the solving process and the final path if the map can be solved
@@ -326,7 +455,7 @@ class Pathfinding():
                                 else :
 
                                     current = self.lowest_f_cost_box(boxesToEvaluate)
-                                    del boxesToEvaluate[self.lowest_f_cost_boxIndex(boxesToEvaluate)]
+                                    del boxesToEvaluate[self.lowest_f_cost_box_index(boxesToEvaluate)]
                                     boxesEvaluated.append(current)
 
                                     if ((current.type != Type.START) and (current.type != Type.END)):
@@ -345,138 +474,6 @@ class Pathfinding():
                                         self.display_path(play)                                    
                                                             
                                 self.display()
-                                pygame.time.wait(self.delay)
-                                pygame.display.update()
-
-    """ evaluate function : 
-    brief : evaluate current box costs and add the best neighbour in the list of boxes to evaluate next
-    param :
-    - boxesToEvaluate : the list of boxes which need to be evaluated next
-    - current : the current box to evaluate
-    """
-    def evaluate(self, boxesToEvaluate, current):
-        for line in (-1, 0, 1):
-            for column in (-1, 0, 1):
-
-                if ((not((line == 0) and (column == 0)) and (current.column + column < self.columns) and (current.line + line < self.lines) and (current.column + column >= 0) and (current.line + line >= 0))):
-
-                    self.table[current.line+line][current.column+column].g = self.calculating_g_cost(self.table[current.line+line][current.column+column], current)
-                    self.table[current.line+line][current.column+column].h = self.calculating_h_cost(self.table[current.line+line][current.column+column])
-                    self.table[current.line+line][current.column+column].f = self.calculatingFcost(self.table[current.line+line][current.column+column])
-
-                    if (self.table[current.line+line][current.column+column].type == Type.EMPTY):
-                        boxesToEvaluate.append(self.table[current.line+line][current.column+column])
-                        self.table[current.line+line][current.column+column].type = Type.NON_EVALUATED
-                    elif (self.table[current.line+line][current.column+column].type == Type.END):
-                        boxesToEvaluate.append(self.table[current.line+line][current.column+column])
-
-    """ display function : 
-    brief : display the map on the window
-    param : none 
-    """
-    def display(self):
-
-        for line in range(self.lines):
-            for column in range(self.columns):
-                if (self.table[line][column].type == Type.EMPTY):
-                    self.screen.blit(self.image.empty, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.WALL):
-                    self.screen.blit(self.image.wall, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.START):
-                    self.screen.blit(self.image.start, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.END):
-                    self.screen.blit(self.image.end, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.EVALUATED):
-                    self.screen.blit(self.image.evaluated, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.NON_EVALUATED):
-                    self.screen.blit(self.image.nonEvaluated, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.CURRENT):
-                    self.screen.blit(self.image.current, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.PATH):
-                    self.screen.blit(self.image.path, self.tableRect[line][column])
-        
-        pygame.display.update()
-
-    """ init_display function : 
-    brief : display the path on the window
-    param : 
-    - play : boolean used to pause the game
-    """
-    def display_path(self, play):
-        update = False
-        
-        for index in range(len(self.path)):
-            update = False
-            while(not(update)):
-                play = self.get_event(play)
-
-                if (play):
-                    self.path[len(self.path)-index-1].type = Type.PATH
-                    self.display()
-                    pygame.time.wait(self.delay)
-                    pygame.display.update()
-                    update = True
-            
-    """ calculatingFcost function : 
-    brief : Calculate the F cost of the current box
-    param : 
-    - current : the current box which need to be evaluated
-    return the F cost (G cost + H cost)
-    """
-    def calculatingFcost(self, current):    
-        return current.g + current.h
-
-    """ lowest_f_cost_boxPath function : 
-    brief : Determine the box with the lowest F cost for the past
-    param : 
-    - boxesToEvaluate : the boxes which must be evaluate
-    return fCostMinNode : the node/box with the lowest F cost
-    """
-    def lowest_f_cost_boxPath(self, boxesToEvaluate):
-        fCostMinNodes = []
-        fCostMinNode = boxesToEvaluate[0]
-        fCostMin = boxesToEvaluate[0].f
-        
-        if (len(boxesToEvaluate) > 1):
-            for index in range(len(boxesToEvaluate)):
-                if (boxesToEvaluate[index].f < fCostMin):
-                    fCostMin = boxesToEvaluate[index].f
-
-            for index in range(len(boxesToEvaluate)):
-                if (boxesToEvaluate[index].f == fCostMin):
-                    fCostMinNodes.append(boxesToEvaluate[index])
-
-            gCostMin = fCostMinNodes[0].g
-            fCostMinNode = fCostMinNodes[0]
-
-            for index in range(len(fCostMinNodes)):
-                if (fCostMinNodes[index].g < gCostMin):
-                    gCostMin = fCostMinNodes[index].g
-                    fCostMinNode = fCostMinNodes[index]
-
-        return fCostMinNode
-
-    """ get_path function : 
-    brief : get the optimized path adding the boxes in the path list
-    """
-    def get_path(self):
-        current = self.table[self.end.line][self.end.column]
-        neighbours = []
-
-        while (not(current.type == Type.START)):
-            for line in(-1,0,1):
-                for column in (-1,0,1):
-                    if ((not(line == 0 and column == 0)) and (current.line + line >= 0) and (current.column + column >= 0) and (current.line + line < self.lines) and (current.column + column < self.columns) and (current.type != Type.START)):
-                        if (self.table[current.line+line][current.column+column].type == Type.EVALUATED):
-                            neighbours.append(self.table[current.line+line][current.column+column])
-                        elif (self.table[current.line+line][current.column+column].type == Type.START):
-                            current = self.table[current.line+line][current.column+column]
-                            neighbours = []
-
-            if (len(neighbours) > 0):
-                current = self.lowest_f_cost_boxPath(neighbours)
-                self.path.append(current)
-            neighbours = []
         
 def main():
     pathfinding = Pathfinding(1920,1080,100,50)
