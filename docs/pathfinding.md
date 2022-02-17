@@ -88,7 +88,7 @@ Parameters | Use
 --- | ---
 `play` | boolean used to pause and unpause the game
 
-*return* : the boolean used to pause and unpause the game.
+*return* play : boolean used to pause and unpause the game.
 
 # <a name="lowest_f_cost_box" />lowest_f_cost_box()
 
@@ -100,7 +100,7 @@ Parameters | Use
 --- | ---
 `boxesToEvaluate` | the list of boxes to evaluate to determine the box with the lowest f cost
 
-*return* : the box with the lowest f cost.
+*return* fCostMinNode : the box with the lowest f cost.
 
 # <a name="lowest_f_cost_box_index" />lowest_f_cost_box_index()
 
@@ -112,7 +112,7 @@ Parameters | Use
 --- | ---
 `boxesToEvaluate` | the list of boxes to evaluate to determine the box with the lowest f cost
 
-*return* : the index of the box with the lowest f cost.
+*return* lowest_f_cost_box_index : the index of the box with the lowest f cost.
 
 # <a name="calculating_g_cost" />calculating_g_cost()
 
@@ -125,7 +125,7 @@ Parameters | Use
 `evaluatedbox` | the box which need to be evaluated
 `motherbox` | the mother box of the box which need to be evaluated
 
-*return* : the g cost of the box which need to be evaluated.
+*return* gCost : g cost of the box which need to be evaluated.
 
 # <a name="calculating_h_cost" />calculating_h_cost()
 
@@ -136,9 +136,51 @@ Parameters | Use
 Parameters | Use
 `evaluatedbox` | the box which need to be evaluated 
 
-*return* : the h cost of the box which need to be evaluated.
+*return* hCost : h cost of the box which need to be evaluated.
 
-# <a name="get_path" />et_path()
+# <a name="calculating_f_cost" />calculating_h_cost()
+
+**Objective** : calculate the f cost of the current box
+
+    def calculating_f_cost(self, current):    
+
+Parameters | Use
+`current` | current box 
+
+*return* : f cost of the current box.
+
+# <a name="evaluate" />evaluate()
+
+**Objective** : evaluate boxes and calculate costs
+
+    def evaluate(self, boxesToEvaluate, current):
+
+Parameters | Use
+`boxesToEvaluate` | list of boxes to evaluate
+`current` | current box
+
+*return* : none
+
+# <a name="display" />display()
+
+**Objective** : display the map on the window
+
+    def display(self):
+
+*return* : none
+
+# <a name="lowest_f_cost_box_path" />lowest_f_cost_box_path()
+
+**Objective** : get the box with the lowest f cost to determine the best path.
+
+    def lowest_f_cost_box_path(self, boxesToEvaluate):
+
+Parameters | Use
+`boxesToEvaluate` | list of boxes in the path to evaluate 
+
+*return* fCostMinNode : the node/box with the lowest f cost.
+
+# <a name="get_path" />get_path()
 
 **Objective** : get the best path.
 
