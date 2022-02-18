@@ -3,7 +3,7 @@ import enum
 from math import *
 from random import *
 
-class Type(enum.Enum):
+class Box_type(enum.Enum):
     """ Class which defines an enumerated type for boxes of a map :
     - EMPTY : empty box where we pass through 
     - WALL : A wall where we can't pas through 
@@ -67,7 +67,7 @@ class box():
         self.f = 0
         self.column = 0
         self.line = 0
-        self.type = Type.EMPTY
+        self.type = Box_type.EMPTY
 
 class Pathfinding():
     """ Class which defines the pathfinding algorithm. 
@@ -111,8 +111,8 @@ class Pathfinding():
         self.tableRect = []
         self.image = Image(0,0)
         (self.start, self.end) = (box(), box())
-        self.start.type = Type.START
-        self.end.type = Type.END
+        self.start.type = Box_type.START
+        self.end.type = Box_type.END
         self.path = []
 
         self.set_window(maxWidth, maxHeight, columns, lines)
@@ -127,20 +127,25 @@ class Pathfinding():
     - lines : the number of lines of the map
     """
     def set_window(self, maxWidth, maxHeight, columns, lines):
+        # Set lins and columns attributes
         self.lines = lines
         self.columns = columns
 
+        # Case 1 : the ratio (max width / columns) is smaller than the ratio (max height / lines)
         if ((maxWidth/self.columns < maxHeight/self.lines)):
             self._width = int((maxWidth/self.columns))*self.columns
             self._height = int((((min((maxWidth/self.columns), (maxHeight/self.lines)) / max((maxWidth/self.columns), (maxHeight/self.lines))) * maxHeight)/self.lines))*self.lines
 
+        # Case 2 : the ratio (max width / columns) is bigger than the ratio (max height / lines)
         else:
             self._width = int((((min((maxWidth/self.columns), (maxHeight/self.lines)) / max((maxWidth/self.columns), (maxHeight/self.lines))) * maxWidth)/self.columns))*self.columns
             self._height = int((maxHeight/self.lines))*self.lines
 
+        # Initialyse pygame display
         self.screen = pygame.display.set_mode((self._width, self._height))
         self.screen.fill((0, 0, 0))
 
+        # Initialyse the map and the image to blit on screen
         self.table = [[box() for column in range(self.columns)] for line in range(self.lines)]
         self.image = Image(self._width/self.columns, self._height/self.lines)
 
@@ -151,23 +156,29 @@ class Pathfinding():
     """
     def init_map(self):
 
+        # Go through the map to initialize each box
         for line in range(self.lines):
             for column in range(self.columns):
-                self.table[line][column].type = Type.WALL if (randint(0,1) == 1) else Type.EMPTY
+                # Set the type of the box randomly
+                self.table[line][column].type = Box_type.WALL if (randint(0,1) == 1) else Box_type.EMPTY
+                # Set the position of each box
                 (self.table[line][column].line, self.table[line][column].column) = (line,column)
 
+        # Randomly set the position of both the start and the end boxes
         self.start.line = randint(0,self.lines-1)
         self.start.column = randint(0,self.columns-1)
         
         self.end.line = randint(0,self.lines-1)
         self.end.column = randint(0,self.columns-1)
 
+        # Ensure that the position of the end box is different from the position of the start box
         while ((self.end.line ==  self.start.line) and (self.end.column ==  self.start.column)):
             self.end.line = randint(0,self.lines-1)
             self.end.column = randint(0,self.columns-1)
         
-        self.table[self.start.line][self.start.column].type = Type.START
-        self.table[self.end.line][self.end.column].type = Type.END
+        # Set both the start and the end boxes type
+        self.table[self.start.line][self.start.column].type = Box_type.START
+        self.table[self.end.line][self.end.column].type = Box_type.END
 
     """ init_display function : 
     brief : init the table of rectangles used to blit the images on
@@ -175,9 +186,13 @@ class Pathfinding():
     """
     def init_display(self):
 
+        # Initialize the size of the matrix of rectangles
         self.tableRect = [[pygame.Rect((column*self._width/self.columns, line*self._height/self.lines), (self._width/self.columns, self._height/self.lines)) for column in range(self.columns)] for line in range(self.lines)]
+        
+        # Go through the table of rectangles
         for line in range(self.lines):
             for column in range(self.columns):
+                # Initialize the position and the size of each rectangle
                 self.tableRect[line][column] = pygame.Rect(((column*self._width/self.columns), (line*self._height/self.lines)), ((self._width/self.columns),(self._height/self.lines)))
 
     """ get_event function : 
@@ -186,12 +201,22 @@ class Pathfinding():
     - play : the boolean used to pause the program
     """
     def get_event(self, play):
+
+        # Look for user actions
         for event in pygame.event.get():
+
+            # Quit the program if the user close the window
             if (event.type == pygame.QUIT):
                 quit()
+
+            # Look for keydown actions
             if (event.type == pygame.KEYDOWN):
+
+                # Close the program if the escape key is pressed
                 if (event.key == pygame.K_ESCAPE):
                     quit()
+
+                # Pause or unpause the program if the space bar key is pressed
                 if (event.key == pygame.K_SPACE):
                     play = not play
 
@@ -204,15 +229,19 @@ class Pathfinding():
     return fCostMinNode : the node/box with the lowest F cost
     """
     def lowest_f_cost_box(self, boxesToEvaluate):
+
         fCostMinNodes = []
         fCostMinNode = boxesToEvaluate[0]
         fCostMin = boxesToEvaluate[0].f
         
-        if (len(boxesToEvaluate) > 1):
+        # Ensure that the list of boxes to evaluate is not empty
+        if (len(boxesToEvaluate) >= 1):
+            # Get the box with the lowest f cost
             for index in range(len(boxesToEvaluate)):
                 if (boxesToEvaluate[index].f < fCostMin):
                     fCostMin = boxesToEvaluate[index].f
 
+            # Add the boxes with the lowest f cost to the list of the box with the lowest f cost
             for index in range(len(boxesToEvaluate)):
                 if (boxesToEvaluate[index].f == fCostMin):
                     fCostMinNodes.append(boxesToEvaluate[index])
@@ -220,12 +249,13 @@ class Pathfinding():
             hCostMin = fCostMinNodes[0].h
             fCostMinNode = fCostMinNodes[0]
 
+            # Get the box with the lowest h cost among the boxes with the lowest f cost
             for index in range(len(fCostMinNodes)):
                 if (fCostMinNodes[index].h < hCostMin):
                     hCostMin = fCostMinNodes[index].h
                     fCostMinNode = fCostMinNodes[index]
 
-        return fCostMinNode
+        return fCostMinNode # return the box with the lowest f cost (+ lowest h cost)
 
     """ lowest_f_cost_box_index function : 
     brief : Determine the index of the box with the lowest F cost
@@ -234,14 +264,17 @@ class Pathfinding():
     return lowest_f_cost_box_index : the index of the box with the lowest F cost
     """
     def lowest_f_cost_box_index(self, boxesToEvaluate):
+
+        # Get the box with the lowest f cost
         box = self.lowest_f_cost_box(boxesToEvaluate)
         lowest_f_cost_box_index = 0
 
+        # Go through the list of boxes to evaluate to get the index of the box with the lowest f cost
         for index in range(len(boxesToEvaluate)):
             if ((boxesToEvaluate[index].line == box.line) and (boxesToEvaluate[index].column == box.column)):
                 lowest_f_cost_box_index = index
     
-        return lowest_f_cost_box_index
+        return lowest_f_cost_box_index # return the index of the box with the lowest f cost
 
     """ calculating_g_cost function : 
     brief : Calculate the G cost of the box which need to be evaluated thanks to its mother box
@@ -250,19 +283,31 @@ class Pathfinding():
     - motherbox : the mother box of the box which need to be evaluated
     return gCost : the G cost of the evaluated box
     """
-    def calculating_g_cost(self, evaluatedbox, motherbox):
-        if motherbox.type == Type.START:
-            if ((motherbox.line == motherbox.line) or (evaluatedbox.column == motherbox.column)):
+    def calculating_g_cost(self, evaluatedBox, motherbox):
+
+        # Case 1 : the mother box is the start box
+        if motherbox.type == Box_type.START:
+            # If the evaluated box (empty or end box) is in the same line or column that the mother box
+            if ((evaluatedBox.line == motherbox.line) or (evaluatedBox.column == motherbox.column) and ((evaluatedBox.type == Box_type.EMPTY) or (evaluatedBox.type == Box_type.END))):
                 gCost = 10
+            # If the evaluated box (empty or end box) is situated in a diagonal of the mother box
             else:
                 gCost = 14
-        elif (((evaluatedbox.line == motherbox.line) or (evaluatedbox.column == motherbox.column)) and ((motherbox.g + 10 < evaluatedbox.g) or (evaluatedbox.type == Type.EMPTY) or (evaluatedbox.type == Type.END))):
+
+        # Case 2 : the mother box isn't the mother box
+        # If the evaluated box (empty or end box) is in the same line or column that the mother box and (mother box g cost + move cost < evaluated box g cost)
+        elif (((evaluatedBox.line == motherbox.line) or (evaluatedBox.column == motherbox.column)) and ((motherbox.g + 10 < evaluatedBox.g) or (evaluatedBox.type == Box_type.EMPTY) or (evaluatedBox.type == Box_type.END))):
             gCost = motherbox.g + 10
-        elif ((not(evaluatedbox.line == motherbox.line or evaluatedbox.column == motherbox.column)) and ((motherbox.g + 14 < evaluatedbox.g) or (evaluatedbox.type == Type.EMPTY or evaluatedbox.type == Type.END))):
+
+        # If the evaluated box (empty or end box) is situated in a diagonal of the mother box and (mother box g cost + move cost < evaluated box g cost)
+        elif ((not(evaluatedBox.line == motherbox.line or evaluatedBox.column == motherbox.column)) and ((motherbox.g + 14 < evaluatedBox.g) or (evaluatedBox.type == Box_type.EMPTY or evaluatedBox.type == Box_type.END))):
             gCost = motherbox.g + 14
+        
+        # (mother box g cost + move cost >= evaluated box g cost)
         else:
-            gCost = evaluatedbox.g
-        return gCost
+            gCost = evaluatedBox.g
+
+        return gCost # return the g cost of the evaluated box
 
     """ calculating_h_cost function : 
     brief : Calculate the H cost of the box which need to be evaluated
@@ -272,14 +317,18 @@ class Pathfinding():
     """
     def calculating_h_cost(self, evaluatedbox):
 
+        # Case 1 : the evaluated box is situated on the same line that the end box
         if (evaluatedbox.line == self.end.line):
             hCost = fabs(evaluatedbox.column-self.end.column)*10
 
+        # Case 2 : the evaluated box is situated on the same column that the end box
         if (evaluatedbox.column == self.end.column):
             hCost = fabs(evaluatedbox.line-self.end.line)*10
 
+        # Case 3 : the evaluated box is situated on both different line and column that the end box
         else:
             hCost = min(fabs(evaluatedbox.line-self.end.line), fabs(evaluatedbox.column - self.end.column))*14 + (fabs(evaluatedbox.column - self.end.column)-min(fabs(evaluatedbox.column - self.end.column),fabs(evaluatedbox.line-self.end.line)))*10 + (fabs(evaluatedbox.line - self.end.line)-min(fabs(evaluatedbox.column - self.end.column),fabs(evaluatedbox.line-self.end.line)))*10
+        
         return hCost
 
     """ calculating_f_cost function : 
@@ -288,7 +337,8 @@ class Pathfinding():
     - current : the current box which need to be evaluated
     return the F cost (G cost + H cost)
     """
-    def calculating_f_cost(self, current):    
+    def calculating_f_cost(self, current):
+        # f cost = g cost + h cost
         return current.g + current.h
 
     """ evaluate function : 
@@ -298,19 +348,26 @@ class Pathfinding():
     - current : the current box to evaluate
     """
     def evaluate(self, boxesToEvaluate, current):
+
+        # Look for  the neighbour of the current box
         for line in (-1, 0, 1):
             for column in (-1, 0, 1):
 
+                # Ensure that the neighbour isn't the current box and is situated on the map
                 if ((not((line == 0) and (column == 0)) and (current.column + column < self.columns) and (current.line + line < self.lines) and (current.column + column >= 0) and (current.line + line >= 0))):
 
+                    # Calculate the current box costs
                     self.table[current.line+line][current.column+column].g = self.calculating_g_cost(self.table[current.line+line][current.column+column], current)
                     self.table[current.line+line][current.column+column].h = self.calculating_h_cost(self.table[current.line+line][current.column+column])
                     self.table[current.line+line][current.column+column].f = self.calculating_f_cost(self.table[current.line+line][current.column+column])
 
-                    if (self.table[current.line+line][current.column+column].type == Type.EMPTY):
+                    # Add the neighbour to the list of boxes to evaluate and set its type to NON_EVALUATED if the neighbour is an EMPTY box
+                    if (self.table[current.line+line][current.column+column].type == Box_type.EMPTY):
                         boxesToEvaluate.append(self.table[current.line+line][current.column+column])
-                        self.table[current.line+line][current.column+column].type = Type.NON_EVALUATED
-                    elif (self.table[current.line+line][current.column+column].type == Type.END):
+                        self.table[current.line+line][current.column+column].type = Box_type.NON_EVALUATED
+
+                    # Only add the neighbour to the list of boxes to evaluate if it's the end box
+                    elif (self.table[current.line+line][current.column+column].type == Box_type.END):
                         boxesToEvaluate.append(self.table[current.line+line][current.column+column])
 
     """ display function : 
@@ -319,27 +376,30 @@ class Pathfinding():
     """
     def display(self):
 
+        # Go through the map
         for line in range(self.lines):
             for column in range(self.columns):
-                if (self.table[line][column].type == Type.EMPTY):
+                
+                # Blit the image corresponding to the type of the box
+                if (self.table[line][column].type == Box_type.EMPTY):
                     self.screen.blit(self.image.empty, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.WALL):
+                elif (self.table[line][column].type == Box_type.WALL):
                     self.screen.blit(self.image.wall, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.START):
+                elif (self.table[line][column].type == Box_type.START):
                     self.screen.blit(self.image.start, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.END):
+                elif (self.table[line][column].type == Box_type.END):
                     self.screen.blit(self.image.end, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.EVALUATED):
+                elif (self.table[line][column].type == Box_type.EVALUATED):
                     self.screen.blit(self.image.evaluated, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.NON_EVALUATED):
+                elif (self.table[line][column].type == Box_type.NON_EVALUATED):
                     self.screen.blit(self.image.nonEvaluated, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.CURRENT):
+                elif (self.table[line][column].type == Box_type.CURRENT):
                     self.screen.blit(self.image.current, self.tableRect[line][column])
-                elif (self.table[line][column].type == Type.PATH):
+                elif (self.table[line][column].type == Box_type.PATH):
                     self.screen.blit(self.image.path, self.tableRect[line][column])
         
         pygame.display.update()
-        pygame.time.wait(self.delay)
+        pygame.time.wait(self.delay) # Add a delay
 
     """ lowest_f_cost_box_path function : 
     brief : Determine the box with the lowest F cost for the past
@@ -352,11 +412,14 @@ class Pathfinding():
         fCostMinNode = boxesToEvaluate[0]
         fCostMin = boxesToEvaluate[0].f
         
-        if (len(boxesToEvaluate) > 1):
+        # Ensure that the list of boxes to evaluate is not empty
+        if (len(boxesToEvaluate) >= 1):
+            # Get the box with the lowest f cost
             for index in range(len(boxesToEvaluate)):
                 if (boxesToEvaluate[index].f < fCostMin):
                     fCostMin = boxesToEvaluate[index].f
 
+            # Add the boxes with the lowest f cost to the list of the box with the lowest f cost
             for index in range(len(boxesToEvaluate)):
                 if (boxesToEvaluate[index].f == fCostMin):
                     fCostMinNodes.append(boxesToEvaluate[index])
@@ -364,33 +427,49 @@ class Pathfinding():
             gCostMin = fCostMinNodes[0].g
             fCostMinNode = fCostMinNodes[0]
 
+            # Get the box with the lowest g cost among the boxes with the lowest f cost
             for index in range(len(fCostMinNodes)):
                 if (fCostMinNodes[index].g < gCostMin):
                     gCostMin = fCostMinNodes[index].g
                     fCostMinNode = fCostMinNodes[index]
 
-        return fCostMinNode
+        return fCostMinNode # return the box with the lowest f cost (+ lowest g cost)
 
     """ get_path function : 
     brief : get the optimized path adding the boxes in the path list
     """
     def get_path(self):
+        # Start from the end box
         current = self.table[self.end.line][self.end.column]
         neighbours = []
 
-        while (not(current.type == Type.START)):
+        # Run the loop until we are in the tart box
+        while (not(current.type == Box_type.START)):
+
+            # Look for the neighbour of the current box
             for line in(-1,0,1):
                 for column in (-1,0,1):
-                    if ((not(line == 0 and column == 0)) and (current.line + line >= 0) and (current.column + column >= 0) and (current.line + line < self.lines) and (current.column + column < self.columns) and (current.type != Type.START)):
-                        if (self.table[current.line+line][current.column+column].type == Type.EVALUATED):
+
+                    # Ensure that the neighbour isn't both the current or the start box and is situated on the map
+                    if ((not(line == 0 and column == 0)) and (current.line + line >= 0) and (current.column + column >= 0) and (current.line + line < self.lines) and (current.column + column < self.columns) and (current.type != Box_type.START)):
+
+                        # Add the neighbour to the list of neighbours if it is an evaluated box
+                        if (self.table[current.line+line][current.column+column].type == Box_type.EVALUATED):
                             neighbours.append(self.table[current.line+line][current.column+column])
-                        elif (self.table[current.line+line][current.column+column].type == Type.START):
+
+                        # The start box becomes the current box if the neighbour is the start box and empty the list of neighbours
+                        elif (self.table[current.line+line][current.column+column].type == Box_type.START):
                             current = self.table[current.line+line][current.column+column]
                             neighbours = []
 
+            # Ensure that the list of neighbours isn't empty (the current box isn't the start box)
             if (len(neighbours) > 0):
+                # The neighbour with the lowest f cost becomes the current box
                 current = self.lowest_f_cost_box_path(neighbours)
+                # Add the current box to the path
                 self.path.append(current)
+
+            # Empty the list of neighbours before the next iteration
             neighbours = []
 
     """ display_path function : 
@@ -401,13 +480,23 @@ class Pathfinding():
     def display_path(self, play):
         update = False
         
+        # Go through the boxes of the path
         for index in range(len(self.path)):
+            
             update = False
+
+            # Stay in the loop while the program is paused
             while(not(update)):
+
+                # Get the user actions
                 play = self.get_event(play)
 
+                # If the program isn't paused
                 if (play):
-                    self.path[len(self.path)-index-1].type = Type.PATH
+                    # Set the type of the current box to PATH
+                    self.path[len(self.path)-index-1].type = Box_type.PATH
+
+                    # Display the map with the new part of the path added
                     self.display()
                     update = True
 
@@ -431,15 +520,22 @@ class Pathfinding():
 
         while True:
             clock.tick(self.FPS)
-
+            
+            # Look for the user actions
             for event in pygame.event.get():
+
+                # Quit the program if the user close the window
                 if (event.type == pygame.QUIT):
                     quit()
 
+                # Look for the keyboard keys pressed
                 if (event.type == pygame.KEYDOWN):
+
+                    # Quit the program if the escape key is pressed
                     if (event.key == pygame.K_ESCAPE):
                         quit()
 
+                    # Start the program if the space bar key is pressed
                     if (event.key == pygame.K_SPACE):
 
                         while (not(pathFound or impossiblePathfinding)):
@@ -447,27 +543,38 @@ class Pathfinding():
 
                             if (play):
 
+                                # The list of boxes to evaluate is empty means that there isn't any possible path
                                 if (len(boxesToEvaluate) == 0):
                                     print("Pathfinding impossible to solve")
                                     impossiblePathfinding = True
-                                    current.type = Type.EVALUATED
+                                    current.type = Box_type.EVALUATED
 
                                 else :
-
+                                    
+                                    # Get the box with the lowest f cost among the boxes to evaluate
                                     current = self.lowest_f_cost_box(boxesToEvaluate)
+
+                                    # Delete the current box from the list of boxes with the lowest f cost
                                     del boxesToEvaluate[self.lowest_f_cost_box_index(boxesToEvaluate)]
+
+                                    # Add the current box to the list of evaluated boxes
                                     boxesEvaluated.append(current)
 
-                                    if ((current.type != Type.START) and (current.type != Type.END)):
-                                        current.type = Type.CURRENT
+                                    # Set the type of the current box to CURRENT if the current box isn't the start box neither the end box
+                                    if ((current.type != Box_type.START) and (current.type != Box_type.END)):
+                                        current.type = Box_type.CURRENT
 
+                                    # If there is still no path found
                                     if (not(pathFound)):
+                                        # Evaluate the current box and update the list of boxes to evaluate
                                         self.evaluate(boxesToEvaluate, current)
 
-                                    if ((current.type != Type.START) and (current.type != Type.END)):
-                                        current.type = Type.EVALUATED
+                                    # Set the type of the current box to EVALUATED if the current box isn't th start box neither the end box
+                                    if ((current.type != Box_type.START) and (current.type != Box_type.END)):
+                                        current.type = Box_type.EVALUATED
 
-                                    if (current.type == Type.END):
+                                    # If the pathfinding algorithm reached the end box, get the path and display it
+                                    if (current.type == Box_type.END):
                                         pathFound = True
                                         self.get_path()
                                         print("A path has been found !")
