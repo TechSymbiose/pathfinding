@@ -1,6 +1,6 @@
-# **<a name="type" />Type**
+# **<a name="box_type" />Box_type**
 
-    class Type(enum.Enum):
+    class Box_type(enum.Enum):
 
 Type class defines an enumerated type for boxes of a map :
 

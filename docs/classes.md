@@ -1,6 +1,6 @@
 # **<a name="classes" />Classes**
 
-- ## [Type](./type.md)
+- ## [Box_type](./box_type.md)
 
 - ## [Image](./image.md)
 
